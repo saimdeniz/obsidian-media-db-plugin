@@ -239,16 +239,16 @@ small.media-db-plugin-list-text {
 }
 
 .media-db-plugin-property-mappings-table .col-property {
-	width: 19%;
+	width: 18%;
 	white-space: nowrap;
 }
 
 .media-db-plugin-property-mappings-table .col-mapping {
-	width: 12%;
+	width: 16%;
 }
 
 .media-db-plugin-property-mappings-table .col-new-name {
-	width: 21%;
+	width: 18%;
 }
 
 .media-db-plugin-property-mappings-table .col-wikilink {
