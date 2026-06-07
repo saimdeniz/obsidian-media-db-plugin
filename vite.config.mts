@@ -1,18 +1,23 @@
-import { UserConfig, defineConfig } from 'vite';
+import { builtinModules } from 'node:module';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { defineConfig } from 'vite';
+import solidPlugin from 'vite-plugin-solid';
+import { getBuildBanner } from './automation/build/buildBanner';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 import banner from 'vite-plugin-banner';
-import path from 'path';
-import { builtinModules } from 'node:module';
-import { dtsBundlePlugin, getBuildBanner } from '@lemons_dev/lemons-obsidian-plugin-automation';
 import manifest from './manifest.json' with { type: 'json' };
 
-const entryFile = 'packages/obsidian/src/main.ts';
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-export default defineConfig(async ({ mode }) => {
+const entryFile = 'src/main.ts';
+
+export default defineConfig(({ mode }) => {
 	const prod = mode === 'production';
-	const outDir = prod ? 'dist/' : `exampleVault/.obsidian/plugins/${manifest.id}/`;
+	const outDir = prod ? 'dist/' : `exampleVault/.obsidian/plugins/${manifest.id}`;
 
-	let plugins = [
+	const plugins = [
+		solidPlugin(),
 		banner({
 			outDir: outDir,
 			content: getBuildBanner(prod ? 'Release Build' : 'Dev Build', version => version),
@@ -28,15 +33,12 @@ export default defineConfig(async ({ mode }) => {
 	];
 
 	return {
-		plugins: plugins,
+		plugins,
+
 		resolve: {
 			alias: {
-				packages: path.resolve(__dirname, './packages'),
+				src: path.resolve(__dirname, './src'),
 			},
-		},
-		define: {
-			// Disable all logs and debug statements in production, but keep warnings and errors
-			__LOG_LEVEL__: prod ? 2 : 4,
 		},
 		build: {
 			lib: {
@@ -46,12 +48,11 @@ export default defineConfig(async ({ mode }) => {
 				formats: ['cjs'],
 			},
 			minify: prod,
-			target: 'es2022',
 			sourcemap: prod ? false : 'inline',
 			cssCodeSplit: false,
 			emptyOutDir: false,
 			outDir: '',
-			rolldownOptions: {
+			rollupOptions: {
 				input: {
 					main: path.resolve(__dirname, entryFile),
 				},
@@ -78,5 +79,5 @@ export default defineConfig(async ({ mode }) => {
 				],
 			},
 		},
-	} as UserConfig;
+	};
 });

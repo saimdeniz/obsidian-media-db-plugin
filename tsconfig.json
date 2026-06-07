@@ -1,19 +1,15 @@
 {
 	"compilerOptions": {
-		"paths": {
-			"packages/*": ["./packages/*"],
-			"tests/*": ["./tests/*"]
-		},
+		"baseUrl": ".",
 		"module": "ESNext",
-		"target": "ES2022",
-		"noEmit": true,
+		"target": "ESNext",
 		"allowJs": true,
 		"checkJs": true,
 		"noImplicitAny": true,
 		"strict": true,
 		"strictNullChecks": true,
 		"noImplicitReturns": true,
-		"moduleResolution": "bundler",
+		"moduleResolution": "node",
 		"importHelpers": true,
 		"isolatedModules": true,
 		"skipLibCheck": true,
@@ -23,7 +19,9 @@
 		"sourceMap": true,
 		"lib": ["DOM", "ESNext"],
 		"allowSyntheticDefaultImports": true,
-		"types": ["vite/client"]
+		"jsx": "preserve",
+		"jsxImportSource": "solid-js",
+		"types": ["vite/client", "bun"]
 	},
-	"include": ["packages/obsidian/**/*.ts"]
+	"include": ["src/**/*.ts", "src/**/*.tsx", "test/**/*.ts"]
 }

@@ -1,0 +1,244 @@
+import { Notice, TFile, TFolder } from 'obsidian';
+import type MediaDbPlugin from 'src/main';
+import { CompletionModal } from 'src/modals/CompletionModal';
+import { MediaDbBulkImportModal as MediaDbBulkImportModal } from 'src/modals/MediaDbBulkImportModal';
+import type { MediaTypeModel } from 'src/models/MediaTypeModel';
+import { ModalResultCode } from './ModalHelper';
+import { dateTimeToString, markdownTable } from './Utils';
+
+export enum BulkImportLookupMethod {
+	ID = 'id',
+	TITLE = 'title',
+	ISBN = 'isbn',
+}
+
+interface BulkImportError {
+	filePath: string;
+	error: string;
+	canceled?: boolean;
+}
+
+export class BulkImportHelper {
+	readonly plugin: MediaDbPlugin;
+
+	constructor(plugin: MediaDbPlugin) {
+		this.plugin = plugin;
+	}
+
+	async import(folder: TFolder): Promise<void> {
+		const erroredFiles: BulkImportError[] = [];
+		let canceled: boolean = false;
+		let successCount = 0;
+		const startTime = Date.now();
+
+		const { selectedAPI, lookupMethod, fieldName, appendContent, silentImport } = await new Promise<{
+			selectedAPI: string;
+			lookupMethod: BulkImportLookupMethod;
+			fieldName: string;
+			appendContent: boolean;
+			silentImport: boolean;
+		}>(resolve => {
+			new MediaDbBulkImportModal(
+				this.plugin,
+				(selectedAPI: string, lookupMethod: BulkImportLookupMethod, fieldName: string, appendContent: boolean, silentImport: boolean) => {
+					resolve({ selectedAPI, lookupMethod, fieldName, appendContent, silentImport });
+				},
+			).open();
+		});
+
+		const mdFiles = folder.children.filter((c): c is TFile => c instanceof TFile);
+		const fileCount = mdFiles.length || 1;
+		let progress = new Notice('', 0);
+		let i = 0;
+		try {
+			for (const child of folder.children) {
+				if (!(child instanceof TFile)) {
+					continue;
+				}
+
+				const file: TFile = child;
+				// @ts-ignore
+				if (progress.noticeEl && !document.body.contains(progress.noticeEl)) progress = new Notice('', 0);
+
+				const pct = Math.round((i / fileCount) * 100);
+				progress.setMessage(`MDB | Importing: ${i + 1}/${fileCount} (${pct}%) — ${file.basename}`);
+				if (canceled) {
+					erroredFiles.push({ filePath: file.path, error: 'user canceled' });
+					i++;
+					continue;
+				}
+
+				const metadata = this.plugin.getMetadataFromFileCache(file);
+				const lookupValue = metadata[fieldName];
+
+				if (!lookupValue || typeof lookupValue !== 'string') {
+					erroredFiles.push({ filePath: file.path, error: `metadata field '${fieldName}' not found, empty, or not a string` });
+					i++;
+					continue;
+				} else if (lookupMethod === BulkImportLookupMethod.ID) {
+					const error = await this.importById(file, lookupValue, selectedAPI, appendContent);
+					if (error) {
+						erroredFiles.push(error);
+					} else {
+						successCount++;
+					}
+				} else if (lookupMethod === BulkImportLookupMethod.TITLE) {
+					const error = await this.importByTitle(file, lookupValue, selectedAPI, appendContent, silentImport);
+					if (error) {
+						if (error.canceled) {
+							canceled = true;
+						}
+						erroredFiles.push(error);
+					} else {
+						successCount++;
+					}
+				} else if (lookupMethod === BulkImportLookupMethod.ISBN) {
+					const cleanedIsbn = lookupValue.replace(/[^0-9]/g, '');
+					const error = await this.importByIsbn(file, cleanedIsbn, selectedAPI, appendContent, silentImport);
+					if (error) {
+						if (error.canceled) {
+							canceled = true;
+						}
+						erroredFiles.push(error);
+					} else {
+						successCount++;
+					}
+				} else {
+					erroredFiles.push({ filePath: file.path, error: `invalid lookup type` });
+					i++;
+					continue;
+				}
+				i++;
+			}
+		} finally {
+			progress.hide();
+		}
+
+		if (erroredFiles.length > 0) {
+			await this.createErroredFilesReport(erroredFiles);
+		}
+
+		const total = successCount + erroredFiles.length;
+		new CompletionModal(this.plugin.app, {
+			title: 'Bulk Import Complete',
+			icon: 'folder-down',
+			total,
+			success: successCount,
+			errors: erroredFiles.filter(e => !e.canceled).length,
+			skipped: erroredFiles.filter(e => e.canceled).length,
+			elapsedMs: Date.now() - startTime,
+			notes: erroredFiles.length > 0 ? ['Error report saved to vault.'] : [],
+		}).open();
+	}
+
+	private async importById(file: TFile, lookupValue: string, selectedAPI: string, appendContent: boolean): Promise<BulkImportError | undefined> {
+		try {
+			const model = await this.plugin.apiManager.queryDetailedInfoById(lookupValue, selectedAPI);
+			if (model) {
+				await this.plugin.createMediaDbNotes([model], appendContent ? file : undefined);
+				return undefined;
+			} else {
+				return { filePath: file.path, error: `Failed to query API with id: ${lookupValue}` };
+			}
+		} catch (e) {
+			return { filePath: file.path, error: `${e}` };
+		}
+	}
+
+	private async importByIsbn(file: TFile, lookupValue: string, selectedAPI: string, appendContent: boolean, silent = false): Promise<BulkImportError | undefined> {
+		let results: MediaTypeModel[] = [];
+		try {
+			results = await this.plugin.apiManager.queryByIsbn(lookupValue, [selectedAPI]);
+		} catch (e) {
+			return { filePath: file.path, error: `${e}` };
+		}
+		if (!results || results.length === 0) {
+			return { filePath: file.path, error: `no search results for isbn` };
+		}
+
+		if (silent) {
+			return this.silentImport(file, results[0], appendContent);
+		}
+
+		// If exactly one highly specific result is returned (our Goodreads/Google logic often does this),
+		// we could auto-confirm, but for safety in bulk, we reuse the selection logic.
+		return await this.showSelectionAndImport(file, results, lookupValue, appendContent);
+	}
+
+	private async importByTitle(file: TFile, lookupValue: string, selectedAPI: string, appendContent: boolean, silent = false): Promise<BulkImportError | undefined> {
+		let results: MediaTypeModel[] = [];
+		try {
+			results = await this.plugin.apiManager.query(lookupValue, [selectedAPI]);
+		} catch (e) {
+			return { filePath: file.path, error: `${e}` };
+		}
+		if (!results || results.length === 0) {
+			return { filePath: file.path, error: `no search results` };
+		}
+
+		if (silent) {
+			return this.silentImport(file, results[0], appendContent);
+		}
+
+		return await this.showSelectionAndImport(file, results, lookupValue, appendContent);
+	}
+
+	private async silentImport(file: TFile, result: MediaTypeModel, appendContent: boolean): Promise<BulkImportError | undefined> {
+		try {
+			const detailedResults = await this.plugin.queryDetails([result]);
+			await this.plugin.createMediaDbNotes(detailedResults, appendContent ? file : undefined);
+			return undefined;
+		} catch (e) {
+			return { filePath: file.path, error: `Silent import error: ${e}` };
+		}
+	}
+
+	private async showSelectionAndImport(file: TFile, results: MediaTypeModel[], lookupValue: string, appendContent: boolean): Promise<BulkImportError | undefined> {
+		const { selectModalResult, selectModal } = await this.plugin.modalHelper.createSelectModal({
+			elements: results,
+			skipButton: true,
+			modalTitle: `Results for '${lookupValue}'`,
+		});
+
+		if (selectModalResult.code === ModalResultCode.ERROR) {
+			selectModal.close();
+			return { filePath: file.path, error: selectModalResult.error.message };
+		}
+
+		if (selectModalResult.code === ModalResultCode.CLOSE) {
+			selectModal.close();
+			return { filePath: file.path, error: 'user canceled', canceled: true };
+		}
+
+		if (selectModalResult.code === ModalResultCode.SKIP) {
+			selectModal.close();
+			return { filePath: file.path, error: 'user skipped' };
+		}
+
+		if (selectModalResult.data.selected.length === 0) {
+			selectModal.close();
+			return { filePath: file.path, error: `no search results selected` };
+		}
+
+		try {
+			const detailedResults = await this.plugin.queryDetails(selectModalResult.data.selected);
+			await this.plugin.createMediaDbNotes(detailedResults, appendContent ? file : undefined);
+		} catch (e) {
+			selectModal.close();
+			return { filePath: file.path, error: `Detaling/Creating error: ${e}` };
+		}
+
+		selectModal.close();
+		return undefined;
+	}
+
+	private async createErroredFilesReport(erroredFiles: BulkImportError[]): Promise<void> {
+		const title = `MDB - bulk import error report ${dateTimeToString(new Date())}`;
+		const filePath = `${title}.md`;
+
+		const table = [['file', 'error']].concat(erroredFiles.map(x => [x.filePath, x.error]));
+
+		const fileContent = markdownTable(table);
+		await this.plugin.app.vault.create(filePath, fileContent);
+	}
+}
