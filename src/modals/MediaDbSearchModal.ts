@@ -1,8 +1,7 @@
 import type { ButtonComponent } from 'obsidian';
-import { Modal, Notice, Setting, TextComponent, ToggleComponent } from 'obsidian';
+import { Modal, Notice, Setting, TextComponent, ToggleComponent, setIcon } from 'obsidian';
 import type MediaDbPlugin from '../main';
-import type { MediaType } from '../utils/MediaType';
-import { MEDIA_TYPES } from '../utils/MediaType';
+import { MediaType, MEDIA_TYPES } from '../utils/MediaType';
 import type { SearchModalData, SearchModalOptions } from '../utils/ModalHelper';
 import { SEARCH_MODAL_DEFAULT_OPTIONS } from '../utils/ModalHelper';
 import { mediaTypeDisplayName } from '../utils/Utils';
@@ -88,34 +87,103 @@ export class MediaDbSearchModal extends Modal {
 		contentEl.createDiv({ cls: 'media-db-plugin-spacer' });
 		contentEl.createEl('h3', { text: 'APIs to search' });
 
-		for (const mediaType of MEDIA_TYPES) {
-			const apiToggleListElementWrapper = contentEl.createEl('div', { cls: 'media-db-plugin-list-wrapper' });
-
-			const apiToggleTextWrapper = apiToggleListElementWrapper.createEl('div', { cls: 'media-db-plugin-list-text-wrapper' });
-			apiToggleTextWrapper.createEl('span', { text: mediaTypeDisplayName(mediaType), cls: 'media-db-plugin-list-text' });
-
-			const apiToggleComponentWrapper = apiToggleListElementWrapper.createEl('div', { cls: 'media-db-plugin-list-toggle' });
-
-			const apiToggleComponent = new ToggleComponent(apiToggleComponentWrapper);
-			apiToggleComponent.setTooltip(mediaTypeDisplayName(mediaType));
-			apiToggleComponent.setValue(this.selectedTypes.contains(mediaType));
-			if (apiToggleComponent.getValue()) {
-				currentToggle = apiToggleComponent;
+		const getMediaTypeCategory = (type: MediaType): string => {
+			if (type === MediaType.Movie || type === MediaType.Series || type === MediaType.Season) {
+				return 'Movie';
 			}
-			apiToggleComponent.onChange(value => {
-				if (value) {
-					if (currentToggle && currentToggle !== apiToggleComponent) {
-						currentToggle.setValue(false);
+			if (type === MediaType.Game || type === MediaType.BoardGame) {
+				return 'Game';
+			}
+			if (type === MediaType.Book || type === MediaType.ComicManga) {
+				return 'Book';
+			}
+			if (type === MediaType.Artist || type === MediaType.MusicRelease || type === MediaType.Song) {
+				return 'Music';
+			}
+			if (type === MediaType.Wiki) {
+				return 'Wiki';
+			}
+			return 'Other';
+		};
+
+		const getCategoryIcon = (category: string): string => {
+			switch (category) {
+				case 'Movie':
+					return 'film';
+				case 'Game':
+					return 'gamepad-2';
+				case 'Book':
+					return 'book-marked';
+				case 'Music':
+					return 'disc-3';
+				case 'Wiki':
+					return 'library-big';
+				default:
+					return 'library';
+			}
+		};
+
+		const categories = ['Movie', 'Game', 'Book', 'Music', 'Wiki', 'Other'];
+		const typesByCategory = new Map<string, MediaType[]>();
+
+		for (const mediaType of MEDIA_TYPES) {
+			const category = getMediaTypeCategory(mediaType);
+			if (!typesByCategory.has(category)) {
+				typesByCategory.set(category, []);
+			}
+			typesByCategory.get(category)!.push(mediaType);
+		}
+
+		const toggles: { mediaType: MediaType; toggle: ToggleComponent }[] = [];
+
+		for (const category of categories) {
+			const categoryTypes = typesByCategory.get(category) ?? [];
+			if (categoryTypes.length === 0) continue;
+
+			const groupEl = contentEl.createDiv({ cls: 'media-db-api-category-group' });
+
+			const titleEl = groupEl.createEl('div', { cls: 'media-db-api-category-title' });
+			const iconSpan = titleEl.createSpan({ cls: 'media-db-api-category-title-icon' });
+			setIcon(iconSpan, getCategoryIcon(category));
+			titleEl.createSpan({ text: category });
+
+			for (const mediaType of categoryTypes) {
+				const toggleRow = groupEl.createDiv({ cls: 'media-db-api-toggle-row' });
+
+				const textWrapper = toggleRow.createDiv({ cls: 'media-db-plugin-list-text-wrapper' });
+				textWrapper.createEl('span', { text: mediaTypeDisplayName(mediaType), cls: 'media-db-plugin-list-text' });
+
+				const toggleWrapper = toggleRow.createDiv({ cls: 'media-db-plugin-list-toggle' });
+
+				const apiToggleComponent = new ToggleComponent(toggleWrapper);
+				apiToggleComponent.setTooltip(mediaTypeDisplayName(mediaType));
+				apiToggleComponent.setValue(this.selectedTypes.includes(mediaType));
+
+				toggles.push({ mediaType, toggle: apiToggleComponent });
+
+				if (apiToggleComponent.getValue()) {
+					currentToggle = apiToggleComponent;
+				}
+
+				apiToggleComponent.onChange(value => {
+					if (value) {
+						for (const item of toggles) {
+							if (item.mediaType !== mediaType) {
+								item.toggle.setValue(false);
+							}
+						}
+						currentToggle = apiToggleComponent;
+						this.selectedTypes = [mediaType];
+					} else {
+						if (currentToggle === apiToggleComponent) {
+							currentToggle = undefined;
+						}
 						this.selectedTypes = this.selectedTypes.filter(x => x !== mediaType);
 					}
-					currentToggle = apiToggleComponent;
-					this.selectedTypes.push(mediaType);
-				} else {
-					currentToggle = undefined;
-					this.selectedTypes = this.selectedTypes.filter(x => x !== mediaType);
-				}
-			});
-			apiToggleComponentWrapper.appendChild(apiToggleComponent.toggleEl);
+				});
+
+				toggleWrapper.appendChild(apiToggleComponent.toggleEl);
+			}
 		}
 
 		contentEl.createDiv({ cls: 'media-db-plugin-spacer' });

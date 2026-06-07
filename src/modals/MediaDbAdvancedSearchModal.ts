@@ -1,5 +1,5 @@
 import type { ButtonComponent } from 'obsidian';
-import { Modal, Notice, Setting, TextComponent, ToggleComponent } from 'obsidian';
+import { Modal, Notice, Setting, TextComponent, ToggleComponent, setIcon } from 'obsidian';
 import type MediaDbPlugin from '../main';
 import type { AdvancedSearchModalData, AdvancedSearchModalOptions } from '../utils/ModalHelper';
 import { ADVANCED_SEARCH_MODAL_DEFAULT_OPTIONS } from '../utils/ModalHelper';
@@ -103,6 +103,23 @@ export class MediaDbAdvancedSearchModal extends Modal {
 			return 'Other';
 		};
 
+		const getCategoryIcon = (category: string): string => {
+			switch (category) {
+				case 'Movie':
+					return 'film';
+				case 'Game':
+					return 'gamepad-2';
+				case 'Book':
+					return 'book-marked';
+				case 'Music':
+					return 'disc-3';
+				case 'Wiki':
+					return 'library-big';
+				default:
+					return 'library';
+			}
+		};
+
 		const categories = ['Movie', 'Game', 'Book', 'Music', 'Wiki', 'Other'];
 		const apisByCategory = new Map<string, typeof this.plugin.apiManager.apis>();
 
@@ -119,7 +136,11 @@ export class MediaDbAdvancedSearchModal extends Modal {
 			if (categoryApis.length === 0) continue;
 
 			const groupEl = contentEl.createDiv({ cls: 'media-db-api-category-group' });
-			groupEl.createEl('div', { text: category, cls: 'media-db-api-category-title' });
+
+			const titleEl = groupEl.createEl('div', { cls: 'media-db-api-category-title' });
+			const iconSpan = titleEl.createSpan({ cls: 'media-db-api-category-title-icon' });
+			setIcon(iconSpan, getCategoryIcon(category));
+			titleEl.createSpan({ text: category });
 
 			for (const api of categoryApis) {
 				const apiToggleRow = groupEl.createDiv({ cls: 'media-db-api-toggle-row' });

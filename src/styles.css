@@ -804,6 +804,9 @@ small.media-db-plugin-list-text {
 }
 
 .media-db-api-category-title {
+	display: flex;
+	align-items: center;
+	gap: 6px;
 	font-size: var(--font-ui-smaller);
 	font-weight: var(--font-bold);
 	color: var(--text-muted);
@@ -812,6 +815,20 @@ small.media-db-plugin-list-text {
 	margin-bottom: 10px;
 	border-bottom: 1px solid var(--background-modifier-border-hover);
 	padding-bottom: 6px;
+}
+
+.media-db-api-category-title-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--text-muted);
+	width: 16px;
+	height: 16px;
+}
+
+.media-db-api-category-title-icon svg {
+	width: 100% !important;
+	height: 100% !important;
 }
 
 .media-db-api-toggle-row {
