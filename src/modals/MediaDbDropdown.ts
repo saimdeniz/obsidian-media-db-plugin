@@ -31,7 +31,7 @@ export class MediaDbDropdown extends ValueComponent<string> {
 		this.chevronEl.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="media-db-chevron-icon"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
 
 		// Create menu container in memory (will be portaled to body on open)
-		this.menuEl = document.createElement('div');
+		this.menuEl = activeDocument.createElement('div');
 		this.menuEl.className = 'media-db-custom-dropdown-menu';
 
 		// Event Listeners
@@ -56,7 +56,7 @@ export class MediaDbDropdown extends ValueComponent<string> {
 			}
 		});
 
-		document.addEventListener('click', this.handleOutsideClick);
+		activeDocument.addEventListener('click', this.handleOutsideClick);
 	}
 
 	private handleOutsideClick = (e: MouseEvent): void => {
@@ -118,12 +118,11 @@ export class MediaDbDropdown extends ValueComponent<string> {
 		this.isOpen = true;
 
 		// Append to body and calculate position
-		document.body.appendChild(this.menuEl);
+		activeDocument.body.appendChild(this.menuEl);
 		const rect = this.triggerEl.getBoundingClientRect();
-		this.menuEl.style.top = `${rect.bottom + 4}px`;
-		this.menuEl.style.left = `${rect.left}px`;
-		this.menuEl.style.width = `${rect.width}px`;
-		this.menuEl.style.minWidth = '140px';
+		this.menuEl.style.setProperty('top', `${rect.bottom + 4}px`);
+		this.menuEl.style.setProperty('left', `${rect.left}px`);
+		this.menuEl.style.setProperty('width', `${rect.width}px`);
 
 		// Trigger CSS layout recalculation to run animations
 		this.menuEl.getBoundingClientRect();
@@ -220,7 +219,7 @@ export class MediaDbDropdown extends ValueComponent<string> {
 		const items = Array.from(this.menuEl.querySelectorAll<HTMLElement>('.media-db-custom-dropdown-item'));
 		if (items.length === 0) return;
 
-		const activeElement = document.activeElement;
+		const activeElement = activeDocument.activeElement;
 		let index = activeElement instanceof HTMLElement ? items.indexOf(activeElement) : -1;
 
 		if (index === -1) {
@@ -233,7 +232,7 @@ export class MediaDbDropdown extends ValueComponent<string> {
 	}
 
 	public destroy(): void {
-		document.removeEventListener('click', this.handleOutsideClick);
+		activeDocument.removeEventListener('click', this.handleOutsideClick);
 		this.menuEl.remove();
 	}
 }

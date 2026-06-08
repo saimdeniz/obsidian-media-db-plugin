@@ -55,18 +55,16 @@ export class MediaDbSearchResultModal extends SelectModal<MediaTypeModel> {
 
 		const setImage = (url: string) => {
 			if (!imgEl) {
-				imgEl = document.createElement('img');
+				imgEl = activeDocument.createElement('img');
 				imgEl.loading = 'lazy';
 				imgEl.alt = item.title;
 				thumb.empty();
 				thumb.appendChild(imgEl);
-				imgEl.style.width = '100%';
-				imgEl.style.height = '100%';
-				imgEl.style.objectFit = 'cover';
+				imgEl.addClass('media-db-cover-image');
 				imgEl.onerror = () => {
 					thumb.empty();
 					const placeholderSpan = thumb.createEl('span', { text: '📷' });
-					placeholderSpan.style.fontSize = '24px';
+					placeholderSpan.addClass('media-db-font-24');
 				};
 			}
 			imgEl.src = url;
@@ -87,7 +85,7 @@ export class MediaDbSearchResultModal extends SelectModal<MediaTypeModel> {
 			if (String(item.image).includes('null')) {
 				thumb.empty();
 				const placeholderSpan = thumb.createEl('span', { text: '📷' });
-				placeholderSpan.style.fontSize = '24px';
+				placeholderSpan.addClass('media-db-font-24');
 			} else {
 				setImage(item.image);
 			}
@@ -96,27 +94,29 @@ export class MediaDbSearchResultModal extends SelectModal<MediaTypeModel> {
 		} else {
 			thumb.empty();
 			const placeholderSpan = thumb.createEl('span', { text: '📷' });
-			placeholderSpan.style.fontSize = '24px';
+			placeholderSpan.addClass('media-db-font-24');
 
 			const needsFetch = !item.image || !item.year;
 			if (needsFetch) {
 				const apiDelay = this.getDelayForApi(item.dataSource);
 				const delayMs = (parseInt(el.id.split('-').pop() ?? '0') ?? 0) * apiDelay;
-				setTimeout(async () => {
-					if (item.image && item.year) return;
-					try {
-						const detailed = await this.plugin.apiManager.queryDetailedInfo(item);
-						if (detailed?.image && !item.image) {
-							item.image = detailed.image;
-							setImage(detailed.image);
+				window.setTimeout(() => {
+					void (async () => {
+						if (item.image && item.year) return;
+						try {
+							const detailed = await this.plugin.apiManager.queryDetailedInfo(item);
+							if (detailed?.image && !item.image) {
+								item.image = detailed.image;
+								setImage(detailed.image);
+							}
+							if (!item.year && detailed?.year) {
+								item.year = detailed.year;
+								updateSummary();
+							}
+						} catch (e) {
+							console.warn('MDB | Failed to fetch detail', e);
 						}
-						if (!item.year && detailed?.year) {
-							item.year = detailed.year;
-							updateSummary();
-						}
-					} catch (e) {
-						console.warn('MDB | Failed to fetch detail', e);
-					}
+					})();
 				}, delayMs);
 			}
 		}

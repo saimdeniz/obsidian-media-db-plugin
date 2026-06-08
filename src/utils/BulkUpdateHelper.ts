@@ -87,7 +87,7 @@ export class BulkUpdateHelper {
 				try {
 					for (const file of targetFiles) {
 						// @ts-ignore (Recreate notice if user accidentally clicked/closed it)
-						if (progress.noticeEl && !document.body.contains(progress.noticeEl)) progress = new Notice('', 0);
+						if (progress.noticeEl && !activeDocument.body.contains(progress.noticeEl)) progress = new Notice('', 0);
 
 						const pct = Math.round((i / targetFiles.length) * 100);
 						progress.setMessage(`MDB | Updating: ${i + 1}/${targetFiles.length} (${pct}%) — ${file.basename}`);

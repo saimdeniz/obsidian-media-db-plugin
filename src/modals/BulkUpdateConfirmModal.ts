@@ -98,7 +98,7 @@ export class BulkUpdateConfirmModal extends Modal {
 				.addToggle(toggle =>
 					toggle.setValue(this.yearFilterEnabled).onChange(value => {
 						this.yearFilterEnabled = value;
-						yearInputsSetting.settingEl.style.display = value ? 'flex' : 'none';
+						yearInputsSetting.settingEl.toggleClass('hidden', !value);
 					}),
 				);
 
@@ -124,10 +124,10 @@ export class BulkUpdateConfirmModal extends Modal {
 						}),
 				);
 
-			yearInputsSetting.settingEl.style.display = this.yearFilterEnabled ? 'flex' : 'none';
+			yearInputsSetting.settingEl.toggleClass('hidden', !this.yearFilterEnabled);
 
 			function updateSubSettingsVisibility(visible: boolean) {
-				subSettingsEl.style.display = visible ? 'block' : 'none';
+				subSettingsEl.toggleClass('hidden', !visible);
 			}
 			updateSubSettingsVisibility(this.smartMode);
 		}

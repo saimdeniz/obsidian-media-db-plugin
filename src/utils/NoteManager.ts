@@ -603,7 +603,7 @@ export class NoteManager {
 		try {
 			for (const file of files) {
 				// @ts-ignore
-				if (progress.noticeEl && !document.body.contains(progress.noticeEl)) progress = new Notice('', 0);
+				if (progress.noticeEl && !activeDocument.body.contains(progress.noticeEl)) progress = new Notice('', 0);
 
 				const pct = Math.round((pi / (files.length || 1)) * 100);
 				progress.setMessage(`MDB | Downloading: ${pi + 1}/${files.length} (${pct}%) — ${file.basename}`);

@@ -63,7 +63,6 @@ export class MediaDbIdOrIsbnSearchModal extends Modal {
 
 		// Inline API selector container placed in the same row
 		this.apiDropdownContainer = typeSetting.controlEl.createDiv({ cls: 'media-db-inline-api-container' });
-		this.apiDropdownContainer.style.transition = 'opacity 0.15s ease-in-out, width 0.15s ease-in-out, margin 0.15s ease-in-out';
 
 		this.apiDropdown = new MediaDbDropdown(this.apiDropdownContainer);
 		for (const api of this.plugin.apiManager.apis) {
@@ -77,7 +76,7 @@ export class MediaDbIdOrIsbnSearchModal extends Modal {
 
 		// 2. Input Query Field
 		this.inputComponent = new TextComponent(contentEl);
-		this.inputComponent.inputEl.style.width = '100%';
+		this.inputComponent.inputEl.addClass('media-db-width-full');
 		this.inputComponent.onChange(value => (this.query = value));
 		this.inputComponent.inputEl.addEventListener('keydown', (event: KeyboardEvent) => {
 			if (event.key === 'Enter') {
@@ -115,18 +114,7 @@ export class MediaDbIdOrIsbnSearchModal extends Modal {
 		}
 
 		if (this.apiDropdownContainer) {
-			if (this.searchType === 'id') {
-				this.apiDropdownContainer.style.opacity = '1';
-				this.apiDropdownContainer.style.pointerEvents = 'auto';
-				this.apiDropdownContainer.style.width = 'auto';
-				this.apiDropdownContainer.style.marginLeft = '8px';
-			} else {
-				this.apiDropdownContainer.style.opacity = '0';
-				this.apiDropdownContainer.style.pointerEvents = 'none';
-				this.apiDropdownContainer.style.width = '0px';
-				this.apiDropdownContainer.style.marginLeft = '0px';
-				this.apiDropdownContainer.style.overflow = 'hidden';
-			}
+			this.apiDropdownContainer.toggleClass('is-hidden', this.searchType !== 'id');
 		}
 	}
 

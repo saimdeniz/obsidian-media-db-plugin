@@ -24,9 +24,9 @@ function SolidDropdown(props: SolidDropdownProps) {
 		}
 	};
 
-	document.addEventListener('click', handleOutsideClick);
+	activeDocument.addEventListener('click', handleOutsideClick);
 	onCleanup(() => {
-		document.removeEventListener('click', handleOutsideClick);
+		activeDocument.removeEventListener('click', handleOutsideClick);
 	});
 
 	const selectedOption = () => props.options.find(opt => opt.value === props.value);

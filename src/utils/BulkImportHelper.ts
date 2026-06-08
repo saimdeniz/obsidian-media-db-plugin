@@ -58,7 +58,7 @@ export class BulkImportHelper {
 
 				const file: TFile = child;
 				// @ts-ignore
-				if (progress.noticeEl && !document.body.contains(progress.noticeEl)) progress = new Notice('', 0);
+				if (progress.noticeEl && !activeDocument.body.contains(progress.noticeEl)) progress = new Notice('', 0);
 
 				const pct = Math.round((i / fileCount) * 100);
 				progress.setMessage(`MDB | Importing: ${i + 1}/${fileCount} (${pct}%) — ${file.basename}`);

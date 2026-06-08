@@ -39,7 +39,6 @@ export class CompletionModal extends Modal {
 
 		// Header
 		const header = contentEl.createEl('div', { cls: 'mdb-completion-header media-db-list-item-flex' });
-		header.style.alignItems = 'center';
 		const iconEl = header.createEl('span', { cls: 'mdb-completion-icon' });
 		setIcon(iconEl, allSuccess ? icon : 'alert-triangle');
 		header.createEl('h2', { cls: 'mdb-completion-title', text: r.title });

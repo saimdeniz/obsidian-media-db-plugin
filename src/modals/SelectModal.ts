@@ -48,7 +48,7 @@ export abstract class SelectModal<T> extends Modal {
 			this.activateHighlighted();
 		});
 		this.scope.register([], ' ', evt => {
-			if (this.elementWrapper && this.elementWrapper === document.activeElement) {
+			if (this.elementWrapper && this.elementWrapper === activeDocument.activeElement) {
 				this.activateHighlighted();
 				evt.preventDefault();
 			}

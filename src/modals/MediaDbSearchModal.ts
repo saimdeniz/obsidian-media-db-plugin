@@ -75,7 +75,7 @@ export class MediaDbSearchModal extends Modal {
 		const searchComponent = new TextComponent(contentEl);
 		let currentToggle: ToggleComponent | undefined = undefined;
 
-		searchComponent.inputEl.style.width = '100%';
+		searchComponent.inputEl.addClass('media-db-width-full');
 		searchComponent.setPlaceholder(placeholder);
 		searchComponent.setValue(this.query);
 		searchComponent.onChange(value => (this.query = value));

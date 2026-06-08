@@ -71,7 +71,7 @@ export class MediaDbAdvancedSearchModal extends Modal {
 
 		const placeholder = 'Search by title';
 		const searchComponent = new TextComponent(contentEl);
-		searchComponent.inputEl.style.width = '100%';
+		searchComponent.inputEl.addClass('media-db-width-full');
 		searchComponent.setPlaceholder(placeholder);
 		searchComponent.setValue(this.query);
 		searchComponent.onChange(value => (this.query = value));

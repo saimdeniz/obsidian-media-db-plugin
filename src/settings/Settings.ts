@@ -1,5 +1,5 @@
 import type { App, IconName } from 'obsidian';
-import { Notice, Platform, PluginSettingTab, SecretComponent, SettingGroup, setIcon } from 'obsidian';
+import { Notice, Platform, PluginSettingTab, SecretComponent, Setting, SettingGroup, setIcon } from 'obsidian';
 import { MediaType } from 'src/utils/MediaType';
 import type MediaDbPlugin from '../main';
 import { PropertyMappingModal } from '../modals/PropertyMappingModal';
@@ -956,7 +956,7 @@ export class MediaDbSettingTab extends PluginSettingTab {
 								.onChange(data => {
 									const newDateFormat = data ? data : DEFAULT_SETTINGS.customDateFormat;
 									this.plugin.settings.customDateFormat = newDateFormat;
-									const previewEl = document.getElementById('media-db-dateformat-preview');
+									const previewEl = activeDocument.getElementById('media-db-dateformat-preview');
 									if (previewEl) {
 										previewEl.textContent = this.plugin.dateFormatter.getPreview(newDateFormat); // update preview
 									}
@@ -1220,7 +1220,7 @@ export class MediaDbSettingTab extends PluginSettingTab {
 						}),
 			);
 
-			panel.createEl('h3', { text: 'Smart Update Filter Keys' }).style.marginTop = '1.5em';
+			new Setting(panel).setHeading().setName('Smart Update Filter Keys');
 			const autoTrackerGroup = new SettingGroup(panel);
 
 			autoTrackerGroup.addSetting(
@@ -1249,7 +1249,7 @@ export class MediaDbSettingTab extends PluginSettingTab {
 						}),
 			);
 
-			panel.createEl('h3', { text: 'Active Creator Commands' }).style.marginTop = '1.5em';
+			new Setting(panel).setHeading().setName('Active Creator Commands');
 			panel.createEl('p', { text: 'Select which media types register "Create entry" commands in the command palette.' });
 
 			const commandGroups = [
