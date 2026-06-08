@@ -207,7 +207,7 @@ export class TMDBMovieAPI extends APIModel {
 			budget: formatUsdWholeDollars(result.budget ?? 0),
 			revenue: formatUsdWholeDollars(result.revenue ?? 0),
 			// @ts-ignore
-			ageRating: result.release_dates?.results?.find((r: any) => r.iso_3166_1 === this.plugin.settings.tmdbRegion)?.release_dates?.[0]?.certification ?? '',
+			ageRating: result.release_dates?.results?.find((r: any) => r.iso_3166_1 === (this.plugin.settings.tmdbAgeRatingRegion || this.plugin.settings.tmdbRegion || 'US'))?.release_dates?.[0]?.certification ?? '',
 			// @ts-ignore
 			streamingServices: result['watch/providers']?.results?.[this.plugin.settings.tmdbRegion]?.flatrate?.map((p: any) => p.provider_name) ?? [],
 

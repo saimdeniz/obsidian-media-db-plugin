@@ -194,7 +194,7 @@ export class TMDBSeriesAPI extends APIModel {
 						(result.spoken_languages?.map((l: any) => l.english_name) ?? []),
 			network: result.networks?.map((n: any) => n.name) ?? [],
 			// @ts-ignore
-			ageRating: result.content_ratings?.results?.find((r: any) => r.iso_3166_1 === this.plugin.settings.tmdbRegion)?.rating ?? '',
+			ageRating: result.content_ratings?.results?.find((r: any) => r.iso_3166_1 === (this.plugin.settings.tmdbAgeRatingRegion || this.plugin.settings.tmdbRegion || 'US'))?.rating ?? '',
 			// @ts-ignore
 			streamingServices: result['watch/providers']?.results?.[this.plugin.settings.tmdbRegion]?.flatrate?.map((p: any) => p.provider_name) ?? [],
 			airing: ['Returning Series'].includes(result.status!),

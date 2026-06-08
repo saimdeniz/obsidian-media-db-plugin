@@ -12,6 +12,8 @@ import type { PropertyMappingModelData } from './PropertyMapping';
 import { PropertyMapping, PropertyMappingModel, PropertyMappingOption } from './PropertyMapping';
 import { FileSuggest } from './suggesters/FileSuggest';
 import { FolderSuggest } from './suggesters/FolderSuggest';
+import { RegionSuggest } from './suggesters/RegionSuggest';
+import { LanguageSuggest } from './suggesters/LanguageSuggest';
 
 function mediaTypeTabIcon(mediaType: MediaType): IconName {
 	switch (mediaType) {
@@ -152,6 +154,8 @@ export interface MediaDbPluginSettings {
 		genres: string[];
 		series: string[];
 	};
+
+	tmdbAgeRatingRegion?: string;
 }
 
 /**
@@ -394,6 +398,7 @@ const DEFAULT_SETTINGS: MediaDbPluginSettings = {
 	autoTagProperties: '',
 	enableWikiLinkParsing: false,
 	tmdbRegion: 'US',
+	tmdbAgeRatingRegion: 'US',
 	tmdbPrimaryLanguage: 'en-US',
 	tmdbNativeFallbackLanguage: 'tr-TR',
 	addNormalizeTitlesAsAlias: false,
@@ -824,17 +829,34 @@ export class MediaDbSettingTab extends PluginSettingTab {
 		regionGroup.addSetting(
 			setting =>
 				void setting
-					.setName('TMDB Region')
-					.setDesc('ISO-3166-1 region code for TMDB localized metadata (e.g., US, TR, GB). Default is US.')
-					.addText(text =>
+					.setName('TMDB Streaming Region')
+					.setDesc('ISO-3166-1 region code for TMDB watch providers / streaming services (e.g., TR, US). Default is US.')
+					.addText(text => {
 						text
 							.setPlaceholder('US')
 							.setValue(this.plugin.settings.tmdbRegion)
 							.onChange(async value => {
-								this.plugin.settings.tmdbRegion = value;
+								this.plugin.settings.tmdbRegion = value.toUpperCase().trim();
 								await this.plugin.saveSettings();
-							}),
-					),
+							});
+						new RegionSuggest(this.app, text.inputEl);
+					}),
+		);
+		regionGroup.addSetting(
+			setting =>
+				void setting
+					.setName('TMDB Age Rating Region')
+					.setDesc('ISO-3166-1 region code for TMDB age rating certification (e.g., US, TR). Default is US.')
+					.addText(text => {
+						text
+							.setPlaceholder('US')
+							.setValue(this.plugin.settings.tmdbAgeRatingRegion || this.plugin.settings.tmdbRegion || 'US')
+							.onChange(async value => {
+								this.plugin.settings.tmdbAgeRatingRegion = value.toUpperCase().trim();
+								await this.plugin.saveSettings();
+							});
+						new RegionSuggest(this.app, text.inputEl);
+					}),
 		);
 
 		panel.createDiv({ cls: 'media-db-plugin-spacer' });
@@ -845,30 +867,32 @@ export class MediaDbSettingTab extends PluginSettingTab {
 				void setting
 					.setName('Primary Language')
 					.setDesc('Primary language to fetch from TMDB (e.g. en-US)')
-					.addText(text =>
+					.addText(text => {
 						text
 							.setPlaceholder('en-US')
 							.setValue(this.plugin.settings.tmdbPrimaryLanguage)
 							.onChange(async value => {
-								this.plugin.settings.tmdbPrimaryLanguage = value;
+								this.plugin.settings.tmdbPrimaryLanguage = value.trim();
 								await this.plugin.saveSettings();
-							}),
-					),
+							});
+						new LanguageSuggest(this.app, text.inputEl);
+					}),
 		);
 		languageGroup.addSetting(
 			setting =>
 				void setting
 					.setName('Native Fallback Language')
 					.setDesc("If the media's original language matches this code (e.g. 'tr') and the plot is missing, fetch the plot in this language (e.g. 'tr-TR').")
-					.addText(text =>
+					.addText(text => {
 						text
 							.setPlaceholder('tr-TR')
 							.setValue(this.plugin.settings.tmdbNativeFallbackLanguage)
 							.onChange(async value => {
-								this.plugin.settings.tmdbNativeFallbackLanguage = value;
+								this.plugin.settings.tmdbNativeFallbackLanguage = value.trim();
 								await this.plugin.saveSettings();
-							}),
-					),
+							});
+						new LanguageSuggest(this.app, text.inputEl);
+					}),
 		);
 	}
 

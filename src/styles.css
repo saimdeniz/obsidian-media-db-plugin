@@ -889,3 +889,7 @@ button.media-db-plugin-button:active {
 	font-size: 24px;
 }
 
+.media-db-hidden {
+	display: none !important;
+}
+
