@@ -1,13 +1,13 @@
-import { BookModel } from '../../models/BookModel';
-import type MediaDbPlugin from '../../main';
-import type { MediaTypeModel } from '../../models/MediaTypeModel';
-import { MediaType } from '../../utils/MediaType';
-import { APIModel } from '../APIModel';
 import { Notice } from 'obsidian';
-import { rateLimitedRequestUrl as requestUrl } from '../requestUrlRateLimited';
-import { requestUrlRateLimited } from '../requestUrlRateLimited';
+import type MediaDbPlugin from '../../main';
+import { BookModel } from '../../models/BookModel';
+import type { MediaTypeModel } from '../../models/MediaTypeModel';
 import { ApiSecretID } from '../../settings/apiSecretsHelper';
 import { getApiSecretValue } from '../../settings/apiSecretsHelper';
+import { MediaType } from '../../utils/MediaType';
+import { APIModel } from '../APIModel';
+import { rateLimitedRequestUrl as requestUrl } from '../requestUrlRateLimited';
+import { requestUrlRateLimited } from '../requestUrlRateLimited';
 
 interface GoogleBooksVolumeInfo {
 	title?: string;

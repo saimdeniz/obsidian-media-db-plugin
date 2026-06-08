@@ -1,6 +1,6 @@
-import { rateLimitedRequestUrl as requestUrl } from './requestUrlRateLimited';
 import { contactEmail, mediaDbVersion, pluginName } from '../utils/Utils';
 import { extractLyricsFromGeniusHtml } from './helpers/geniusLyricsExtract';
+import { rateLimitedRequestUrl as requestUrl } from './requestUrlRateLimited';
 
 interface GeniusSearchHit {
 	result: {

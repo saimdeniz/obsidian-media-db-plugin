@@ -116,7 +116,7 @@ export class TMDBSeriesAPI extends APIModel {
 			throw Error(`MDB | Received status code ${response.response.status} from ${this.apiName}.`);
 		}
 
-		let result = response.data;
+		const result = response.data;
 
 		if (!result) {
 			throw Error(`MDB | No data received from ${this.apiName}.`);
@@ -124,7 +124,7 @@ export class TMDBSeriesAPI extends APIModel {
 
 		const fallbackLang = this.plugin.settings.tmdbNativeFallbackLanguage;
 		// @ts-ignore
-		if (!result.overview && fallbackLang && result.original_language && result.original_language.toLowerCase() === fallbackLang.split('-')[0].toLowerCase()) {
+		if (!result.overview && fallbackLang && result.original_language?.toLowerCase() === fallbackLang.split('-')[0].toLowerCase()) {
 			const fallbackResponse = await client.GET('/3/tv/{series_id}', {
 				headers: {
 					Authorization: `Bearer ${bearer}`,
@@ -171,7 +171,7 @@ export class TMDBSeriesAPI extends APIModel {
 					return Math.round(sum / result.episode_run_time.length).toString();
 				}
 				// @ts-ignore
-				if (result.last_episode_to_air && result.last_episode_to_air.runtime) {
+				if (result.last_episode_to_air?.runtime) {
 					// Fallback for newer series where TMDB deprecated the main array
 					// @ts-ignore
 					return result.last_episode_to_air.runtime.toString();

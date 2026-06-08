@@ -1,4 +1,3 @@
-import { rateLimitedRequestUrl as requestUrl } from '../requestUrlRateLimited';
 import { BoardGameModel } from 'src/models/BoardGameModel';
 import type MediaDbPlugin from '../../main';
 import type { MediaTypeModel } from '../../models/MediaTypeModel';
@@ -6,6 +5,7 @@ import { ApiSecretID, getApiSecretValue } from '../../settings/apiSecretsHelper'
 import { MediaType } from '../../utils/MediaType';
 import { coerceYear } from '../../utils/Utils';
 import { APIModel } from '../APIModel';
+import { rateLimitedRequestUrl as requestUrl } from '../requestUrlRateLimited';
 
 // sadly no open api schema available
 

@@ -268,7 +268,7 @@ export class TMDBSeasonAPI extends APIModel {
 					return Math.round(sum / seriesData.episode_run_time.length).toString();
 				}
 				// @ts-ignore
-				if (seriesData.last_episode_to_air && seriesData.last_episode_to_air.runtime) {
+				if (seriesData.last_episode_to_air?.runtime) {
 					// @ts-ignore
 					return seriesData.last_episode_to_air.runtime.toString();
 				}

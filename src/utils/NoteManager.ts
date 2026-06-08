@@ -1,14 +1,22 @@
-import { Notice, parseYaml, TFile, TFolder, stringifyYaml, requestUrl, normalizePath, MarkdownView } from 'obsidian';
 import type { App } from 'obsidian';
+import { Notice, parseYaml, TFile, TFolder, stringifyYaml, requestUrl, normalizePath, MarkdownView } from 'obsidian';
+import type { MusicBrainzAPI } from '../api/apis/MusicBrainzAPI';
+import type { MusicBrainzArtistAPI } from '../api/apis/MusicBrainzArtistAPI';
+import { GeniusClient } from '../api/GeniusClient';
+import { MUSICBRAINZ_NOTE_DATA_SOURCE, musicBrainzRegisteredApiName } from '../api/musicBrainzConstants';
+import { SpotifyClient } from '../api/SpotifyClient';
 import type MediaDbPlugin from '../main';
-import { MediaType } from './MediaType';
-import type { MediaTypeModel } from '../models/MediaTypeModel';
-import { BookModel } from '../models/BookModel';
+import { CompletionModal } from '../modals/CompletionModal';
+import { ConfirmOverwriteChoice, ConfirmOverwriteModal } from '../modals/ConfirmOverwriteModal';
 import type { ArtistModel } from '../models/ArtistModel';
+import { BookModel } from '../models/BookModel';
+import type { MediaTypeModel } from '../models/MediaTypeModel';
+import { MediaType } from './MediaType';
 import type { MusicReleaseModel } from '../models/MusicReleaseModel';
 import { SongModel } from '../models/SongModel';
 import { ApiSecretID, getApiSecretValue } from '../settings/apiSecretsHelper';
 import { noteTypeValueForMedia } from './noteTypeSettings';
+import type { CreateNoteOptions } from './Utils';
 import {
 	replaceIllegalFileNameCharactersInString,
 	unCamelCase,
@@ -20,14 +28,6 @@ import {
 	normalizeTitleForAsciiAlias,
 	mergeNoteBodies,
 } from './Utils';
-import type { CreateNoteOptions } from './Utils';
-import { MUSICBRAINZ_NOTE_DATA_SOURCE, musicBrainzRegisteredApiName } from '../api/musicBrainzConstants';
-import { GeniusClient } from '../api/GeniusClient';
-import { SpotifyClient } from '../api/SpotifyClient';
-import type { MusicBrainzAPI } from '../api/apis/MusicBrainzAPI';
-import type { MusicBrainzArtistAPI } from '../api/apis/MusicBrainzArtistAPI';
-import { CompletionModal } from '../modals/CompletionModal';
-import { ConfirmOverwriteChoice, ConfirmOverwriteModal } from '../modals/ConfirmOverwriteModal';
 
 export type Metadata = Record<string, unknown>;
 
@@ -296,7 +296,7 @@ export class NoteManager {
 			};
 
 			const artistBaseFolder = await this.plugin.mediaTypeManager.getFolder(artist, this.app);
-			let artistNoteFolder = artistBaseFolder;
+			const artistNoteFolder = artistBaseFolder;
 			let albumNotesFolder = artistBaseFolder;
 
 			if (useTree) {
@@ -704,7 +704,7 @@ export class NoteManager {
 			if (typeof val === 'string') {
 				// Don't format URLs or similar links
 				if (val.startsWith('http://') || val.startsWith('https://')) continue;
-				next[key] = val.replace(/:(?=[^\s\/\\])/g, ': ');
+				next[key] = val.replace(new RegExp(':(?=[^\\s/\\\\])', 'g'), ': ');
 			}
 		}
 		return next;
@@ -734,15 +734,15 @@ export class NoteManager {
 		if (alias === null) {
 			return meta;
 		}
-		const prev = meta['aliases'];
+		const prev = meta.aliases;
 		if (Array.isArray(prev)) {
 			if (!prev.includes(alias)) {
-				meta['aliases'] = [...prev, alias];
+				meta.aliases = [...prev, alias];
 			}
 		} else if (typeof prev === 'string') {
-			meta['aliases'] = prev === alias ? [prev] : [prev, alias];
+			meta.aliases = prev === alias ? [prev] : [prev, alias];
 		} else {
-			meta['aliases'] = [alias];
+			meta.aliases = [alias];
 		}
 		return meta;
 	}

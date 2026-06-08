@@ -1,6 +1,6 @@
-import { BookModel } from '../../models/BookModel';
-import type { APIManager } from '../APIManager';
+import type { BookModel } from '../../models/BookModel';
 import type { MediaDbPluginSettings } from '../../settings/Settings';
+import type { APIManager } from '../APIManager';
 
 export class MetadataAggregator {
 	private apiManager: APIManager;
@@ -16,7 +16,7 @@ export class MetadataAggregator {
 	 */
 	async hydrateBook(baseModel: BookModel): Promise<BookModel> {
 		// Only proceed if hybrid mode is enabled via our new settings
-		if (!(this.settings as any).enableHybridBookMetadata) {
+		if (!this.settings.enableHybridBookMetadata) {
 			return baseModel;
 		}
 
@@ -50,14 +50,14 @@ export class MetadataAggregator {
 			return null;
 		});
 
-		const fetchedModels = (await Promise.all(hydrationPromises)).filter(m => m !== null) as BookModel[];
+		const fetchedModels = (await Promise.all(hydrationPromises)).filter(m => m !== null);
 
 		// Add the base model to the pool of models we have data from
 		const allModels = [baseModel, ...fetchedModels];
 		const modelMap = new Map<string, BookModel>();
 		allModels.forEach(m => modelMap.set(m.dataSource, m));
 
-		const priorities = (this.settings as any).bookPropertyPriorities || {
+		const priorities = this.settings.bookPropertyPriorities ?? {
 			image: ['AmazonAPI', 'GoodreadsAPI', 'GoogleBooksAPI', 'OpenLibraryAPI'],
 			plot: ['GoodreadsAPI', 'GoogleBooksAPI', 'AmazonAPI', 'OpenLibraryAPI'],
 			ratings: ['GoodreadsAPI', 'AmazonAPI', 'GoogleBooksAPI', 'OpenLibraryAPI'],
@@ -66,10 +66,10 @@ export class MetadataAggregator {
 		};
 
 		// 1. Cover Image Priority
-		baseModel.image = this.getFirstValidValue(modelMap, priorities.image, m => m.image as any);
+		baseModel.image = this.getFirstValidValue(modelMap, priorities.image, m => m.image) ?? '';
 
 		// 2. Plot / Description Priority
-		baseModel.plot = this.getFirstValidValue(modelMap, priorities.plot, m => m.plot as any);
+		baseModel.plot = this.getFirstValidValue(modelMap, priorities.plot, m => m.plot) ?? '';
 
 		// 3. Ratings Priority
 		const ratingModelSource = this.getFirstValidSource(modelMap, priorities.ratings, m => m.onlineRating > 0);
@@ -95,10 +95,10 @@ export class MetadataAggregator {
 
 		// 6. Fill missing basic metadata (Pages, Year) from anywhere if missing
 		if (!baseModel.pages) {
-			baseModel.pages = this.getFirstValidValue(allModels, null, m => m.pages) || 0;
+			baseModel.pages = this.getFirstValidValue(allModels, null, m => m.pages) ?? 0;
 		}
 		if (!baseModel.year) {
-			baseModel.year = this.getFirstValidValue(allModels, null, m => m.year) || 0;
+			baseModel.year = this.getFirstValidValue(allModels, null, m => m.year) ?? 0;
 		}
 
 		console.log(`MDB | Hydration complete for ${baseModel.title}.`);

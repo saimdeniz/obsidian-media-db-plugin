@@ -140,7 +140,7 @@ export class TMDBMovieAPI extends APIModel {
 			throw Error(`MDB | Received status code ${response.response.status} from ${this.apiName}.`);
 		}
 
-		let result = response.data;
+		const result = response.data;
 
 		if (!result) {
 			throw Error(`MDB | No data received from ${this.apiName}.`);
@@ -148,7 +148,7 @@ export class TMDBMovieAPI extends APIModel {
 
 		const fallbackLang = this.plugin.settings.tmdbNativeFallbackLanguage;
 		// @ts-ignore
-		if (!result.overview && fallbackLang && result.original_language && result.original_language.toLowerCase() === fallbackLang.split('-')[0].toLowerCase()) {
+		if (!result.overview && fallbackLang && result.original_language?.toLowerCase() === fallbackLang.split('-')[0].toLowerCase()) {
 			const fallbackResponse = await client.GET('/3/movie/{movie_id}', {
 				headers: {
 					Authorization: `Bearer ${bearer}`,

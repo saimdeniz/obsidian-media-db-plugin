@@ -93,7 +93,7 @@ export class PropertyMapper {
 		if (Object.hasOwn(obj, 'aliases')) {
 			const aliasesPm = propertyMappings.find(p => p.property === 'aliases');
 			if (aliasesPm?.mapping !== PropertyMappingOption.Remove) {
-				const incoming = obj['aliases'];
+				const incoming = obj.aliases;
 				const targetKey = aliasesPm?.mapping === PropertyMappingOption.Map && aliasesPm.newProperty ? aliasesPm.newProperty : 'aliases';
 				const merged = PropertyMapper.mergeAliasValues(newObj[targetKey], incoming);
 				if (merged.length > 0) {

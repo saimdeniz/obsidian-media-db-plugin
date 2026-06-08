@@ -1,5 +1,5 @@
-import { rateLimitedRequestUrl as requestUrl } from './requestUrlRateLimited';
 import { contactEmail, mediaDbVersion, pluginName } from '../utils/Utils';
+import { rateLimitedRequestUrl as requestUrl } from './requestUrlRateLimited';
 
 interface SpotifyTokenResponse {
 	access_token: string;

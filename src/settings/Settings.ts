@@ -143,6 +143,15 @@ export interface MediaDbPluginSettings {
 
 	propertyMappingModels: PropertyMappingModelData[];
 	linkedApiSecretIds: Record<ApiSecretID, string>;
+
+	enableHybridBookMetadata?: boolean;
+	bookPropertyPriorities?: {
+		image: string[];
+		plot: string[];
+		ratings: string[];
+		genres: string[];
+		series: string[];
+	};
 }
 
 /**

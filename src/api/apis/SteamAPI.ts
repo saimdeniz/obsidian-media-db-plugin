@@ -1,10 +1,10 @@
-import { rateLimitedRequestUrl as requestUrl } from '../requestUrlRateLimited';
 import type MediaDbPlugin from '../../main';
 import { GameModel } from '../../models/GameModel';
 import type { MediaTypeModel } from '../../models/MediaTypeModel';
 import { MediaType } from '../../utils/MediaType';
 import { coerceYear, imageUrlExists } from '../../utils/Utils';
 import { APIModel } from '../APIModel';
+import { rateLimitedRequestUrl as requestUrl } from '../requestUrlRateLimited';
 
 interface SearchResponse {
 	appid: string;

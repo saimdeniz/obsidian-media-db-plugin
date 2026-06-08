@@ -1,10 +1,10 @@
-import MediaDbPlugin from '../../main';
+import { Notice } from 'obsidian';
+import type MediaDbPlugin from '../../main';
 import { BookModel } from '../../models/BookModel';
 import type { MediaTypeModel } from '../../models/MediaTypeModel';
 import { MediaType } from '../../utils/MediaType';
 import { APIModel } from '../APIModel';
 import { browserFetch } from '../helpers/BrowserFetch';
-import { Notice } from 'obsidian';
 
 export class GoodreadsAPI extends APIModel {
 	plugin: MediaDbPlugin;

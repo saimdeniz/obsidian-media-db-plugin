@@ -1,4 +1,5 @@
-import { Notice, TFile, TFolder } from 'obsidian';
+import type { TFolder } from 'obsidian';
+import { Notice, TFile } from 'obsidian';
 import type MediaDbPlugin from 'src/main';
 import { CompletionModal } from 'src/modals/CompletionModal';
 import { MediaDbBulkImportModal as MediaDbBulkImportModal } from 'src/modals/MediaDbBulkImportModal';

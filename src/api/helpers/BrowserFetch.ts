@@ -1,7 +1,7 @@
-import { requestUrl } from 'obsidian';
 import type { RequestUrlParam, RequestUrlResponse } from 'obsidian';
-import { requestUrlRateLimited } from '../requestUrlRateLimited';
+import { requestUrl } from 'obsidian';
 import type { RequestUrlRateLimitedOptions } from '../requestUrlRateLimited';
+import { requestUrlRateLimited } from '../requestUrlRateLimited';
 
 const DEFAULT_USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36';
 

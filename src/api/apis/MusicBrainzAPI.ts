@@ -1,11 +1,11 @@
-import { rateLimitedRequestUrl as requestUrl } from '../requestUrlRateLimited';
 import type MediaDbPlugin from '../../main';
 import type { MediaTypeModel } from '../../models/MediaTypeModel';
 import { MusicReleaseModel } from '../../models/MusicReleaseModel';
 import { MediaType } from '../../utils/MediaType';
 import { contactEmail, coerceYear, getLanguageName, mediaDbVersion, pluginName } from '../../utils/Utils';
-import { MUSICBRAINZ_NOTE_DATA_SOURCE } from '../musicBrainzConstants';
 import { APIModel } from '../APIModel';
+import { MUSICBRAINZ_NOTE_DATA_SOURCE } from '../musicBrainzConstants';
+import { rateLimitedRequestUrl as requestUrl } from '../requestUrlRateLimited';
 
 // sadly no open api schema available
 

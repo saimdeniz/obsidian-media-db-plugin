@@ -1,4 +1,3 @@
-import { rateLimitedRequestUrl as requestUrl } from '../requestUrlRateLimited';
 import type MediaDbPlugin from '../../main';
 import { GameModel } from '../../models/GameModel';
 import type { MediaTypeModel } from '../../models/MediaTypeModel';
@@ -6,6 +5,7 @@ import { ApiSecretID, getApiSecretValue } from '../../settings/apiSecretsHelper'
 import { MediaType } from '../../utils/MediaType';
 import { coerceYear } from '../../utils/Utils';
 import { APIModel } from '../APIModel';
+import { rateLimitedRequestUrl as requestUrl } from '../requestUrlRateLimited';
 
 interface IGDBCover {
 	url: string;

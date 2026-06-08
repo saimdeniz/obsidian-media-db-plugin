@@ -276,8 +276,8 @@ export function coerceMovieDurationMinutes(value: unknown): number {
 			return 0;
 		}
 		let total = 0;
-		const hours = t.match(/(\d+)\s*(?:hours?|hrs?)\b/i) ?? t.match(/(\d+)\s*h\b/i);
-		const mins = t.match(/(\d+)\s*(?:minutes?|mins?)\b/i) ?? t.match(/(\d+)\s*min\b/i);
+		const hours = (/(\d+)\s*(?:hours?|hrs?)\b/i.exec(t)) ?? (/(\d+)\s*h\b/i.exec(t));
+		const mins = (/(\d+)\s*(?:minutes?|mins?)\b/i.exec(t)) ?? (/(\d+)\s*min\b/i.exec(t));
 		if (hours) {
 			total += parseInt(hours[1], 10) * 60;
 		}
