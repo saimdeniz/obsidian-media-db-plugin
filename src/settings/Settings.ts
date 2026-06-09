@@ -899,6 +899,7 @@ export class MediaDbSettingTab extends PluginSettingTab {
 	display(): void {
 		const { containerEl } = this;
 		containerEl.empty();
+		containerEl.addClass('media-db-settings-tab');
 
 		const headerNav = containerEl.createEl('nav', { cls: 'media-db-setting-header' });
 		const tabGroup = headerNav.createDiv({ cls: 'media-db-setting-tab-group' });
@@ -1253,7 +1254,8 @@ export class MediaDbSettingTab extends PluginSettingTab {
 						}),
 			);
 
-			new Setting(panel).setHeading().setName('Smart Update Filter Keys');
+			panel.createDiv({ cls: 'media-db-plugin-spacer' });
+			panel.createEl('h3', { text: 'Smart Update Filter Keys' });
 			const autoTrackerGroup = new SettingGroup(panel);
 
 			autoTrackerGroup.addSetting(
@@ -1282,8 +1284,8 @@ export class MediaDbSettingTab extends PluginSettingTab {
 						}),
 			);
 
-			new Setting(panel).setHeading().setName('Active Creator Commands');
-			panel.createEl('p', { text: 'Select which media types register "Create entry" commands in the command palette.' });
+			panel.createDiv({ cls: 'media-db-plugin-spacer' });
+			panel.createEl('h3', { text: 'Active Creator Commands' });
 
 			const commandGroups = [
 				{ name: 'Video', types: [MediaType.Movie, MediaType.Series, MediaType.Season] },

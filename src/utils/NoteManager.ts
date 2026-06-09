@@ -11,11 +11,12 @@ import { ConfirmOverwriteChoice, ConfirmOverwriteModal } from '../modals/Confirm
 import type { ArtistModel } from '../models/ArtistModel';
 import { BookModel } from '../models/BookModel';
 import type { MediaTypeModel } from '../models/MediaTypeModel';
-import { MediaType } from './MediaType';
+import { MediaType, MEDIA_TYPES } from './MediaType';
 import type { MusicReleaseModel } from '../models/MusicReleaseModel';
 import { SongModel } from '../models/SongModel';
 import { ApiSecretID, getApiSecretValue } from '../settings/apiSecretsHelper';
-import { noteTypeValueForMedia } from './noteTypeSettings';
+import { noteTypeValueForMedia, resolveMetadataTypeToMediaType } from './noteTypeSettings';
+import { PropertyMappingOption } from '../settings/PropertyMapping';
 import type { CreateNoteOptions } from './Utils';
 import {
 	replaceIllegalFileNameCharactersInString,
@@ -116,7 +117,18 @@ export class NoteManager {
 				options.overwrite = true;
 			}
 
-			if (this.settings.imageDownload) {
+			let imageLocked = false;
+			const mediaType = mediaTypeModel.getMediaType();
+			if (options.attachFile && this.isImageUpdateLocked(mediaType)) {
+				imageLocked = true;
+				const attachFileMetadata = this.getMetadataFromFileCache(options.attachFile);
+				const imageKey = this.getImageKey(mediaType);
+				if (imageKey && imageKey in attachFileMetadata) {
+					mediaTypeModel.image = String(attachFileMetadata[imageKey]);
+				}
+			}
+
+			if (this.settings.imageDownload && !imageLocked) {
 				await this.downloadImageForMediaModel(mediaTypeModel);
 			}
 
@@ -442,6 +454,12 @@ export class NoteManager {
 			return;
 		}
 		const metadata = this.getMetadataFromFileCache(attachFile);
+		const mediaTypeVal = metadata.type ?? noteTypeValueForMedia(this.settings, mediaTypeModel.getMediaType());
+		const internalMediaType = resolveMetadataTypeToMediaType(this.plugin.settings, mediaTypeVal);
+		if (internalMediaType && this.isImageUpdateLocked(internalMediaType)) {
+			return;
+		}
+
 		const oldImageLink = metadata.image;
 
 		if (typeof oldImageLink === 'string' && oldImageLink.startsWith('[[') && oldImageLink.endsWith(']]')) {
@@ -926,6 +944,15 @@ export class NoteManager {
 
 		const attachFileMetadata = this.getMetadataFromFileCache(fileToAttach);
 
+		const mediaTypeVal = attachFileMetadata.type ?? fileMetadata.type;
+		const internalMediaType = resolveMetadataTypeToMediaType(this.plugin.settings, mediaTypeVal);
+		if (internalMediaType && this.isImageUpdateLocked(internalMediaType)) {
+			const imageKey = this.getImageKey(internalMediaType);
+			if (imageKey && imageKey in attachFileMetadata) {
+				fileMetadata[imageKey] = attachFileMetadata[imageKey];
+			}
+		}
+
 		// Rescue arrays that Object.assign would normally crush
 		const rescueArray = (key: string) => {
 			const arr = attachFileMetadata[key];
@@ -1211,5 +1238,32 @@ export class NoteManager {
 		}
 
 		new Notice(`MDB | Cleaned ${deletedCount} unused cover images.`);
+	}
+
+	getImageKey(mediaType: MediaType): string {
+		const model = this.plugin.settings.propertyMappingModels.find(x => x.type === mediaType);
+		if (model) {
+			const pm = model.properties.find(p => p.property === 'image');
+			if (pm) {
+				if (pm.mapping === PropertyMappingOption.Map && pm.newProperty) {
+					return pm.newProperty;
+				}
+				if (pm.mapping === PropertyMappingOption.Remove) {
+					return '';
+				}
+			}
+		}
+		return 'image';
+	}
+
+	isImageUpdateLocked(mediaType: MediaType): boolean {
+		const model = this.plugin.settings.propertyMappingModels.find(x => x.type === mediaType);
+		if (model) {
+			const pm = model.properties.find(p => p.property === 'image');
+			if (pm) {
+				return pm.updateLocked === true;
+			}
+		}
+		return false;
 	}
 }

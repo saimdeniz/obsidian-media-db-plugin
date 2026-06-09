@@ -226,7 +226,34 @@ export default function PropertyMappingModelComponent(props: PropertyMappingMode
 										</Show>
 									</td>
 									<td class="col-property">
-										<code>{property.property}</code>
+										<div style={{ display: 'flex', 'align-items': 'center', gap: '8px' }}>
+											<code>{property.property}</code>
+											<Show when={property.property === 'image'}>
+												<button
+													class={`media-db-lock-btn ${property.updateLocked ? 'is-locked' : 'is-unlocked'}`}
+													title={property.updateLocked ? "Image is locked (will not be updated from API)" : "Image is unlocked (will be updated from API)"}
+													onClick={e => {
+														e.stopPropagation();
+														const nextState = !property.updateLocked;
+														setModelData('properties', index(), 'updateLocked', nextState);
+														persistIfValid();
+													}}
+													style={{
+														background: 'transparent',
+														border: 'none',
+														padding: '2px',
+														cursor: 'pointer',
+														display: 'inline-flex',
+														'align-items': 'center',
+														opacity: property.updateLocked ? '1' : '0.4',
+													}}
+												>
+													<Show when={property.updateLocked} fallback={<Icon iconName="unlock" />}>
+														<Icon iconName="lock" />
+													</Show>
+												</button>
+											</Show>
+										</div>
 									</td>
 
 									<Show

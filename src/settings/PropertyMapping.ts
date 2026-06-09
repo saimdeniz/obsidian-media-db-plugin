@@ -12,6 +12,7 @@ export interface PropertyMappingData {
 	pinBottom?: boolean;
 	autoTag?: boolean;
 	autoTagPrefix?: string;
+	updateLocked?: boolean;
 }
 
 export interface PropertyMappingModelData {
@@ -114,6 +115,7 @@ export class PropertyMappingModel {
 				property.pinBottom,
 				property.autoTag,
 				property.autoTagPrefix,
+				property.updateLocked,
 			);
 			copy.properties.push(propertyCopy);
 		}
@@ -178,6 +180,7 @@ export class PropertyMappingModel {
 							loadedProperty.pinBottom ?? false,
 							loadedProperty.autoTag ?? false,
 							loadedProperty.autoTagPrefix ?? '',
+							loadedProperty.updateLocked ?? false,
 						),
 					);
 				}
@@ -199,6 +202,7 @@ export class PropertyMapping {
 	pinBottom: boolean;
 	autoTag: boolean;
 	autoTagPrefix: string;
+	updateLocked: boolean;
 
 	constructor(
 		property: string,
@@ -209,6 +213,7 @@ export class PropertyMapping {
 		pinBottom?: boolean,
 		autoTag?: boolean,
 		autoTagPrefix?: string,
+		updateLocked?: boolean,
 	) {
 		this.property = property;
 		this.newProperty = newProperty;
@@ -218,6 +223,7 @@ export class PropertyMapping {
 		this.pinBottom = pinBottom ?? false;
 		this.autoTag = autoTag ?? false;
 		this.autoTagPrefix = autoTagPrefix ?? '';
+		this.updateLocked = updateLocked ?? false;
 	}
 
 	validate(): { res: boolean; err?: Error } {
@@ -297,10 +303,21 @@ export class PropertyMapping {
 			pinBottom: this.pinBottom,
 			autoTag: this.autoTag,
 			autoTagPrefix: this.autoTagPrefix,
+			updateLocked: this.updateLocked,
 		};
 	}
 
 	static fromJSON(json: PropertyMappingData): PropertyMapping {
-		return new PropertyMapping(json.property, json.newProperty, json.mapping, json.locked, json.wikilink, json.pinBottom, json.autoTag, json.autoTagPrefix);
+		return new PropertyMapping(
+			json.property,
+			json.newProperty,
+			json.mapping,
+			json.locked,
+			json.wikilink,
+			json.pinBottom,
+			json.autoTag,
+			json.autoTagPrefix,
+			json.updateLocked,
+		);
 	}
 }

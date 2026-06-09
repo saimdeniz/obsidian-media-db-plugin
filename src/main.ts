@@ -556,6 +556,7 @@ export default class MediaDbPlugin extends Plugin {
 		}
 	}
 
+
 	async createMediaDbNotes(models: MediaTypeModel[], attachFile?: TFile): Promise<void> {
 		return this.noteManager.createMediaDbNotes(models, attachFile);
 	}

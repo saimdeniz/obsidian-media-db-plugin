@@ -893,3 +893,38 @@ button.media-db-plugin-button:active {
 	display: none !important;
 }
 
+
+
+.media-db-lock-btn {
+	transition: all 0.15s ease-in-out;
+}
+.media-db-lock-btn.is-locked {
+	color: var(--interactive-accent) !important;
+	opacity: 1 !important;
+}
+.media-db-lock-btn.is-unlocked {
+	color: var(--text-muted) !important;
+	opacity: 0.35 !important;
+}
+.media-db-lock-btn:hover {
+	opacity: 0.8 !important;
+	transform: scale(1.1);
+}
+.media-db-lock-btn:active {
+	transform: scale(0.9);
+}
+
+.media-db-settings-tab .media-db-plugin-spacer {
+	margin-bottom: 0px !important;
+}
+
+.media-db-settings-tab h3 {
+	margin-top: 16px !important;
+	margin-bottom: 16px !important;
+}
+
+
+
+
+
+
